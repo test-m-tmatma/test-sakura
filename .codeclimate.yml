@@ -1,3 +1,7 @@
+plugins:
+  cppcheck:
+    enabled: true
+
 engines:
   cppcheck:
     enabled: true
