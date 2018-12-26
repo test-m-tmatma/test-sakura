@@ -1,10 +1,6 @@
 plugins:
   cppcheck:
     enabled: true
-
-engines:
-  cppcheck:
-    enabled: true
     config:
       check: all
       project: sakura.sln
