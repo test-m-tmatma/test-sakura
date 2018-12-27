@@ -4,7 +4,4 @@ plugins:
     config:
       check: all
       project: sakura.sln
-      language: c++
-      stds:
-        - c++11
       platform: win32W
