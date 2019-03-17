@@ -1,5 +1,4 @@
 ﻿/*! @file */
-// この行は文字化け対策のためのものです。
 #include "StdAfx.h"
 #include "CCodeBase.h"
 #include "charcode.h"
@@ -31,14 +30,6 @@ EConvertResult CCodeBase::UnicodeToHex(const wchar_t* cSrc, const int iSLen, TCH
 
 	return RESULT_COMPLETE;
 }
-
-
-
-
-
-
-
-
 
 /*!
 	MIME デコーダー

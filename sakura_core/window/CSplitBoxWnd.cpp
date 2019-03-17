@@ -14,7 +14,7 @@
 */
 #include "StdAfx.h"
 #include "window/CSplitBoxWnd.h"
-
+#include "uiparts/CGraphics.h"
 
 CSplitBoxWnd::CSplitBoxWnd()
 : CWnd(_T("::CSplitBoxWnd"))
@@ -23,12 +23,9 @@ CSplitBoxWnd::CSplitBoxWnd()
 	return;
 }
 
-
 CSplitBoxWnd::~CSplitBoxWnd()
 {
 }
-
-
 
 HWND CSplitBoxWnd::Create( HINSTANCE hInstance, HWND hwndParent, int bVertical )
 {
@@ -80,33 +77,22 @@ HWND CSplitBoxWnd::Create( HINSTANCE hInstance, HWND hwndParent, int bVertical )
 	);
 }
 
-
-
-
 /* 描画処理 */
 void CSplitBoxWnd::Draw3dRect( HDC hdc, int x, int y, int cx, int cy,
 	COLORREF clrTopLeft, COLORREF clrBottomRight )
 {
-	HBRUSH	hBrush;
 	RECT	rc;
-	hBrush = ::CreateSolidBrush( clrTopLeft );
 	::SetRect( &rc, x, y, x + cx - 1, y + 1 );
-	::FillRect( hdc, &rc, hBrush );
+	::MyFillRect( hdc, rc, clrTopLeft );
 	::SetRect( &rc, x, y, x + 1, y + cy - 1 );
-	::FillRect( hdc, &rc, hBrush );
-	::DeleteObject( hBrush );
+	::MyFillRect( hdc, rc, clrTopLeft );
 
-	hBrush = ::CreateSolidBrush( clrBottomRight );
 	::SetRect( &rc, x + cx - 1, y, x + cx, y + cy );
-	::FillRect( hdc, &rc, hBrush );
+	::MyFillRect( hdc, rc, clrBottomRight );
 	::SetRect( &rc, x, y + cy - 1, x + cx, y + cy );
-	::FillRect( hdc, &rc, hBrush );
-	::DeleteObject( hBrush );
+	::MyFillRect( hdc, rc, clrBottomRight );
 	return;
 }
-
-
-
 
 void CSplitBoxWnd::FillSolidRect( HDC hdc, int x, int y, int cx, int cy, COLORREF clr )
 {
@@ -116,9 +102,6 @@ void CSplitBoxWnd::FillSolidRect( HDC hdc, int x, int y, int cx, int cy, COLORRE
 	::ExtTextOutW_AnyBuild( hdc, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL );
 	return;
 }
-
-
-
 
 // WM_PAINT
 LRESULT CSplitBoxWnd::OnPaint( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
@@ -160,9 +143,6 @@ LRESULT CSplitBoxWnd::OnPaint( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 	::EndPaint(hwnd, &ps);
 	return 0L;
 }
-
-
-
 
 //WM_LBUTTONDOWN
 LRESULT CSplitBoxWnd::OnLButtonDown( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
@@ -218,12 +198,9 @@ LRESULT CSplitBoxWnd::OnLButtonDown( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM
 		::SelectObject( hdc, hBrushOld );
 		::DeleteObject( hBrush );
 		::ReleaseDC( ::GetParent( GetParentHwnd() ), hdc );
-
 	}
 	return 0L;
 }
-
-
 
 //WM_MOUSEMOVE
 LRESULT CSplitBoxWnd::OnMouseMove( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
@@ -294,7 +271,6 @@ LRESULT CSplitBoxWnd::OnMouseMove( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 			::SelectObject( hdc, hBrushOld );
 			::DeleteObject( hBrush );
 			::ReleaseDC( ::GetParent( GetParentHwnd() ), hdc );
-
 		}
 	}else{
 		::GetClientRect( ::GetParent( GetParentHwnd() ), &rc );
@@ -353,9 +329,6 @@ LRESULT CSplitBoxWnd::OnMouseMove( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 	}
 	return 0L;
 }
-
-
-
 
 //WM_LBUTTONUP
 LRESULT CSplitBoxWnd::OnLButtonUp( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
@@ -425,9 +398,6 @@ LRESULT CSplitBoxWnd::OnLButtonUp( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 	return 0L;
 }
 
-
-
-
 //WM_LBUTTONDBLCLK
 LRESULT CSplitBoxWnd::OnLButtonDblClk( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
@@ -451,6 +421,4 @@ LRESULT CSplitBoxWnd::OnLButtonDblClk( HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
 	}
 	return 0L;
 }
-
-
 

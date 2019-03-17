@@ -173,6 +173,8 @@ dlg/CDlgGrepReplace.o \
 dlg/CDlgInput1.o \
 dlg/CDlgJump.o \
 dlg/CDlgOpenFile.o \
+dlg/CDlgOpenFile_CommonFileDialog.o \
+dlg/CDlgOpenFile_CommonItemDialog.o \
 dlg/CDlgPluginOption.o \
 dlg/CDlgPrintSetting.o \
 dlg/CDlgProfileMgr.o \
@@ -295,6 +297,8 @@ recent/CRecentCmd.o \
 recent/CRecentCurDir.o \
 recent/CRecentEditNode.o \
 recent/CRecentExceptMru.o \
+recent/CRecentExcludeFile.o \
+recent/CRecentExcludeFolder.o \
 recent/CRecentFile.o \
 recent/CRecentFolder.o \
 recent/CRecentGrepFile.o \

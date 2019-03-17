@@ -18,13 +18,13 @@
 
 #include "StdAfx.h"
 #include "prop/CPropCommon.h"
-#include "uiparts/CMenuDrawer.h" // 2002/2/10 aroka
+#include "uiparts/CGraphics.h"
 #include "uiparts/CImageListMgr.h" // 2005/8/9 aroka
+#include "uiparts/CMenuDrawer.h" // 2002/2/10 aroka
 #include "util/shell.h"
 #include "util/window.h"
 #include "sakura_rc.h"
 #include "sakura.hh"
-
 
 //@@@ 2001.02.04 Start by MIK: Popup Help
 static const DWORD p_helpids[] = {	//11000
@@ -127,8 +127,6 @@ int Listbox_ADDDATA(
 }
 
 
-static int nToolBarListBoxTopMargin = 0;
-
 static void SetDlgItemsEnableState(
 	HWND	hwndDlg,
 	HWND	hwndResList,
@@ -165,7 +163,6 @@ static void SetDlgItemsEnableState(
 	}else{
 		::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_ADD ), TRUE );
 	}
-
 }
 
 /* Toolbar メッセージ処理 */
@@ -202,11 +199,13 @@ INT_PTR CPropToolbar::DispatchEvent(
 		hwndResList = ::GetDlgItem( hwndDlg, IDC_LIST_RES );
 
 		{
+			// pixel数をベタ書きするとHighDPI環境でずれるのでシステム値を取得して使う
+			const int cyEdge = ::GetSystemMetrics(SM_CYEDGE);
+
 			// 2014.11.25 フォントの高さが正しくなかったバグを修正
 			CTextWidthCalc calc(hwndResList);
 			int nFontHeight = calc.GetTextHeight();
-			nListItemHeight = std::max(nFontHeight, GetSystemMetrics(SM_CYSMICON)) + DpiScaleY(2);
-			nToolBarListBoxTopMargin = (nListItemHeight - (nFontHeight + 1)) / 2;
+			nListItemHeight = std::max(nFontHeight, GetSystemMetrics(SM_CYSMICON)) + cyEdge;
 		}
 		/* ダイアログデータの設定 Toolbar */
 		SetData( hwndDlg );
@@ -286,7 +285,6 @@ INT_PTR CPropToolbar::DispatchEvent(
 						}
 						lResult = List_SetItemHeight( hwndFuncList, lResult, nListItemHeight );
 					}
-
 				}
 				return TRUE;
 			}
@@ -366,7 +364,6 @@ INT_PTR CPropToolbar::DispatchEvent(
 					//	To Here Apr. 13, 2002 genta
 					List_SetCurSel( hwndResList, nIndex1 + 1 );
 					break;
-
 
 				case IDC_BUTTON_ADD:
 					nIndex1 = List_GetCount( hwndResList );
@@ -460,17 +457,16 @@ INT_PTR CPropToolbar::DispatchEvent(
 		MyWinHelp( hwndDlg, HELP_CONTEXTMENU, (ULONG_PTR)(LPVOID)p_helpids );	// 2006.10.10 ryoji MyWinHelpに変更に変更
 		return TRUE;
 //@@@ 2001.12.22 End
-
 	}
 	return FALSE;
 }
 
-
-
-
 /* ダイアログデータの設定 Toolbar */
 void CPropToolbar::SetData( HWND hwndDlg )
 {
+	// pixel数をベタ書きするとHighDPI環境でずれるのでシステム値を取得して使う
+	const int cyEdge = ::GetSystemMetrics(SM_CYEDGE);
+
 	HWND		hwndCombo;
 	HWND		hwndResList;
 	int			i;
@@ -491,7 +487,7 @@ void CPropToolbar::SetData( HWND hwndDlg )
 	// 2014.11.25 フォントの高さが正しくなかったバグを修正
 	int nFontHeight = CTextWidthCalc(hwndResList).GetTextHeight();
 
-	nListItemHeight = std::max(nFontHeight, GetSystemMetrics(SM_CYSMICON)) + DpiScaleY(2);
+	nListItemHeight = std::max(nFontHeight, GetSystemMetrics(SM_CYSMICON)) + cyEdge;
 
 	/* ツールバーボタンの情報をセット(リストボックス)*/
 	for( i = 0; i < m_Common.m_sToolBar.m_nToolBarButtonNum; ++i ){
@@ -510,8 +506,6 @@ void CPropToolbar::SetData( HWND hwndDlg )
 	::CheckDlgButton( hwndDlg, IDC_CHECK_TOOLBARISFLAT, m_Common.m_sToolBar.m_bToolBarIsFlat );
 	return;
 }
-
-
 
 /* ダイアログデータの取得 Toolbar */
 int CPropToolbar::GetData( HWND hwndDlg )
@@ -550,85 +544,103 @@ int CPropToolbar::GetData( HWND hwndDlg )
 */
 void CPropToolbar::DrawToolBarItemList( DRAWITEMSTRUCT* pDis )
 {
-	TBBUTTON	tbb;
-	HBRUSH		hBrush;
-	RECT		rc;
-	RECT		rc0;
-	RECT		rc1;
-	RECT		rc2;
+	// pixel数をベタ書きするとHighDPI環境でずれるのでシステム値を取得して使う
+	const int cxBorder = ::GetSystemMetrics(SM_CXBORDER);
+	const int cyBorder = ::GetSystemMetrics(SM_CYBORDER);
+	const int cxEdge = ::GetSystemMetrics(SM_CXEDGE);
+	const int cyEdge = ::GetSystemMetrics(SM_CYEDGE);
+	const int cxFrame = ::GetSystemMetrics(SM_CXFRAME);
+	const int cyFrame = ::GetSystemMetrics(SM_CYFRAME);
+	const int cxSmIcon = ::GetSystemMetrics(SM_CXSMICON);
+	const int cySmIcon = ::GetSystemMetrics(SM_CYSMICON);
 
+	RECT rcItem = pDis->rcItem;
+	RECT rcText = rcItem;
+	rcText.left += GetSystemMetrics( SM_CXSMICON ) + DpiScaleX( 2 );
+	RECT rcFrame = rcText;
 
-//	hBrush = ::CreateSolidBrush( ::GetSysColor( COLOR_WINDOW ) );
-	hBrush = ::GetSysColorBrush( COLOR_WINDOW );
-	::FillRect( pDis->hDC, &pDis->rcItem, hBrush );
-//	::DeleteObject( hBrush );
+	// アイテム背景をウインドウ背景色で塗りつぶす
+	::MyFillRect( pDis->hDC, rcItem, COLOR_WINDOW );
 
-	rc  = pDis->rcItem;
-	rc0 = pDis->rcItem;
-	rc0.left += GetSystemMetrics(SM_CXSMICON) + DpiScaleX(2);
-	rc1 = rc0;
-	rc2 = rc0;
+	// 背景色と前景色
+	int bkColor;
+	int textColor;
 
-	if( (int)pDis->itemID < 0 ){
+	/* アイテムが選択されている */
+	if( pDis->itemState & ODS_SELECTED ){
+		bkColor = COLOR_HIGHLIGHT;
+		textColor = COLOR_HIGHLIGHTTEXT;
 	}else{
-
-//@@@ 2002.01.03 YAZAKI m_tbMyButtonなどをCShareDataからCMenuDrawerへ移動したことによる修正。
-//		tbb = m_cShareData.m_tbMyButton[pDis->itemData];
-//		tbb = m_pcMenuDrawer->m_tbMyButton[pDis->itemData];
-		tbb = m_pcMenuDrawer->getButton(pDis->itemData);
-
-		// ボタンとセパレータとで処理を分ける	2007.11.02 ryoji
-		WCHAR	szLabel[256];
-		if( tbb.fsStyle & TBSTYLE_SEP ){
-			// テキストだけ表示する
-			if( tbb.idCommand == F_SEPARATOR ){
-				auto_strncpy( szLabel, LSW(STR_PROPCOMTOOL_ITEM1), _countof(szLabel) - 1 );	// nLength 未使用 2003/01/09 Moca
-				szLabel[_countof(szLabel) - 1] = L'\0';
-			}else if( tbb.idCommand == F_MENU_NOT_USED_FIRST ){
-				// ツールバー折返
-				auto_strncpy( szLabel, LSW(STR_PROPCOMTOOL_ITEM2), _countof(szLabel) - 1 );
-				szLabel[_countof(szLabel) - 1] = L'\0';
-			}else{
-				auto_strncpy( szLabel, LSW(STR_PROPCOMTOOL_ITEM3), _countof(szLabel) - 1 );
-				szLabel[_countof(szLabel) - 1] = L'\0';
-			}
-		//	From Here Oct. 15, 2001 genta
-		}else{
-			// アイコンとテキストを表示する
-			m_pcIcons->Draw( tbb.iBitmap, pDis->hDC, rc.left + 2, rc.top + 2, ILD_NORMAL );
-			m_cLookup.Funccode2Name( tbb.idCommand, szLabel, _countof( szLabel ) );
-		}
-		//	To Here Oct. 15, 2001 genta
-
-		/* アイテムが選択されている */
-		if( pDis->itemState & ODS_SELECTED ){
-//			hBrush = ::CreateSolidBrush( ::GetSysColor( COLOR_HIGHLIGHT ) );
-			hBrush = ::GetSysColorBrush( COLOR_HIGHLIGHT );
-			::SetTextColor( pDis->hDC, ::GetSysColor( COLOR_HIGHLIGHTTEXT ) );
-		}else{
-//			hBrush = ::CreateSolidBrush( ::GetSysColor( COLOR_WINDOW ) );
-			hBrush = ::GetSysColorBrush( COLOR_WINDOW );
-			::SetTextColor( pDis->hDC, ::GetSysColor( COLOR_WINDOWTEXT ) );
-		}
-		rc1.left++;
-		rc1.top++;
-		rc1.right--;
-		rc1.bottom--;
-		::FillRect( pDis->hDC, &rc1, hBrush );
-//		::DeleteObject( hBrush );
-
-		::SetBkMode( pDis->hDC, TRANSPARENT );
-		// 2014.11.25 topマージンが2固定だとフォントが大きい時に見切れるので変数に変更
-		TextOutW_AnyBuild( pDis->hDC, rc1.left + 4, rc1.top + nToolBarListBoxTopMargin, szLabel, wcslen( szLabel ) );
-
+		bkColor = COLOR_WINDOW;
+		textColor = COLOR_WINDOWTEXT;
 	}
+
+	// デバイスコンテキストのオプションを設定する
+	int bkModeOld = ::SetBkMode( pDis->hDC, TRANSPARENT );
+	COLORREF bkColorOld = ::SetBkColor( pDis->hDC, ::GetSysColor( bkColor ) );
+	COLORREF textColorOld = ::SetTextColor( pDis->hDC, ::GetSysColor( textColor ) );
+
+	// itemDataに紐づくボタン情報を取得する
+	TBBUTTON tbb = m_pcMenuDrawer->getButton(pDis->itemData);
+
+	// ボタンとセパレータとで処理を分ける	2007.11.02 ryoji
+	WCHAR	szLabel[256];
+	if( tbb.fsStyle & TBSTYLE_SEP ){
+		// テキストだけ表示する
+		if( tbb.idCommand == F_SEPARATOR ){
+			auto_strncpy( szLabel, LSW(STR_PROPCOMTOOL_ITEM1), _countof(szLabel) - 1 );	// nLength 未使用 2003/01/09 Moca
+			szLabel[_countof(szLabel) - 1] = L'\0';
+		}else if( tbb.idCommand == F_MENU_NOT_USED_FIRST ){
+			// ツールバー折返
+			auto_strncpy( szLabel, LSW(STR_PROPCOMTOOL_ITEM2), _countof(szLabel) - 1 );
+			szLabel[_countof(szLabel) - 1] = L'\0';
+		}else{
+			auto_strncpy( szLabel, LSW(STR_PROPCOMTOOL_ITEM3), _countof(szLabel) - 1 );
+			szLabel[_countof(szLabel) - 1] = L'\0';
+		}
+	}else{
+		// アイコンとテキストを表示する
+		m_pcIcons->DrawToolIcon(
+			pDis->hDC,
+			rcItem.left + cxEdge,
+			rcItem.top + cyEdge + (rcItem.bottom - rcItem.top - cySmIcon) / 2,
+			tbb.iBitmap,
+			ILD_NORMAL,
+			cxSmIcon,
+			cySmIcon
+		);
+		m_cLookup.Funccode2Name( tbb.idCommand, szLabel, _countof( szLabel ) );
+	}
+
+	// 微調整 フォーカス枠の分へこませる
+	::InflateRect( &rcText, -cxBorder, -cyBorder );
+
+	// 選択アイテムの背景を描画
+	::ExtTextOut( pDis->hDC, 0, 0, ETO_OPAQUE, &rcText, (LPCTSTR) NULL, 0, NULL );
+
+	// 微調整 インデントと上余白
+	rcText.left += cxFrame;
+	rcText.top += cyBorder;
+
+	// 指定された矩形に左寄せ上下中央揃えで出力する
+	::DrawText(
+		pDis->hDC,
+		szLabel,
+		-1,
+		&rcText,
+		DT_LEFT | DT_VCENTER | DT_SINGLELINE
+	);
+
+	// デバイスコンテキストのオプションを元に戻す
+	::SetTextColor( pDis->hDC, textColorOld );
+	::SetBkColor( pDis->hDC, bkColorOld );
+	::SetBkMode( pDis->hDC, bkModeOld );
 
 	/* アイテムにフォーカスがある */
 	if( pDis->itemState & ODS_FOCUS ){
-		::DrawFocusRect( pDis->hDC, &rc2 );
+		::DrawFocusRect( pDis->hDC, &rcFrame );
 	}
+
 	return;
 }
-
-
 

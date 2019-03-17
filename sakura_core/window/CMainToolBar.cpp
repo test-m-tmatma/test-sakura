@@ -115,7 +115,6 @@ static LRESULT CALLBACK ToolBarWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPAR
 	return ::CallWindowProc( g_pOldToolBarWndProc, hWnd, msg, wParam, lParam );
 }
 
-
 /* ツールバー作成
 	@date @@@ 2002.01.03 YAZAKI m_tbMyButtonなどをCShareDataからCMenuDrawerへ移動したことによる修正。
 	@date 2005.08.29 aroka ツールバーの折り返し
@@ -200,7 +199,16 @@ void CMainToolBar::CreateToolBar( void )
 			(LONG_PTR)ToolBarWndProc
 		);
 
-		Toolbar_SetButtonSize( m_hwndToolBar, DpiScaleX(22), DpiScaleY(22) );	// 2009.10.01 ryoji 高DPI対応スケーリング
+		// pixel数をベタ書きするとHighDPI環境でずれるのでシステム値を取得して使う
+		const int cxBorder = DpiScaleX( 1 );
+		const int cyBorder = DpiScaleY( 1 );
+		const int cxEdge = DpiScaleX( 1 );
+		const int cyEdge = DpiScaleY( 1 );
+		const int cxSmIcon = DpiScaleX( 16 );
+		const int cySmIcon = DpiScaleY( 16 );
+		const int cxToolButton = cxBorder + cxEdge + cxSmIcon + cxEdge + cxBorder;	//22
+		const int cyToolButton = cyBorder + cyEdge + cySmIcon + cyEdge + cyBorder;	//22
+		Toolbar_SetButtonSize( m_hwndToolBar, cxToolButton, cyToolButton );	// 2009.10.01 ryoji 高DPI対応スケーリング
 		Toolbar_ButtonStructSize( m_hwndToolBar, sizeof(TBBUTTON) );
 		//	Oct. 12, 2000 genta
 		//	既に用意されているImage Listをアイコンとして登録
@@ -283,11 +291,10 @@ void CMainToolBar::CreateToolBar( void )
 						Toolbar_GetItemRect( m_hwndToolBar, count-1, &rc );
 
 						//コンボボックスを作る
-						//	Mar. 8, 2003 genta 検索ボックスを1ドット下にずらした
 						m_hwndSearchBox = CreateWindow( _T("COMBOBOX"), _T("Combo"),
 								WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_VSCROLL | CBS_DROPDOWN
 								/*| CBS_SORT*/ | CBS_AUTOHSCROLL /*| CBS_DISABLENOSCROLL*/,
-								rc.left, rc.top + 1, rc.right - rc.left, (rc.bottom - rc.top) * 10,
+								rc.left, rc.top, rc.right - rc.left, (rc.bottom - rc.top) * 10,
 								m_hwndToolBar, (HMENU)(INT_PTR)tbb.idCommand, CEditApp::getInstance()->GetAppInstance(), NULL );
 						if( m_hwndSearchBox )
 						{
@@ -324,6 +331,16 @@ void CMainToolBar::CreateToolBar( void )
 							m_comboDel = SComboBoxItemDeleter(); // 再表示用の初期化
 							m_comboDel.pRecent = &m_cRecentSearch;
 							CDialog::SetComboBoxDeleter(m_hwndSearchBox, &m_comboDel);
+
+							// コンボボックスの垂直位置を調整する
+							CMyRect rcCombo;
+							::GetWindowRect( m_hwndSearchBox, &rcCombo );
+							::SetWindowPos( m_hwndSearchBox, NULL,
+								rc.left,	//作ったときと同じ値を指定
+								(rc.bottom - rc.top - rcCombo.Height()) / 2,	//上下中央に配置する
+								0,			//rcCombo.Width()のまま変えない
+								0,			//rcCombo.Height()のまま変えない
+								SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOSENDCHANGING );
 						}
 						break;
 
@@ -420,7 +437,6 @@ bool CMainToolBar::EatMessage(MSG* msg)
 	return false;
 }
 
-
 /*!	@brief ToolBarのOwnerDraw
 
 	@param pnmh [in] Owner Draw情報
@@ -456,12 +472,26 @@ LPARAM CMainToolBar::ToolBarOwnerDraw( LPNMCUSTOMDRAW pnmh )
 			// コマンド番号（pnmh->dwItemSpec）からアイコン番号を取得する	// 2007.11.02 ryoji
 			int nIconId = Toolbar_GetBitmap( pnmh->hdr.hwndFrom, (WPARAM)pnmh->dwItemSpec );
 
-			int offset = ((pnmh->rc.bottom - pnmh->rc.top) - m_pcIcons->cy()) / 2;		// アイテム矩形からの画像のオフセット	// 2007.03.25 ryoji
-			int shift = pnmh->uItemState & ( CDIS_SELECTED | CDIS_CHECKED ) ? 1 : 0;	//	Aug. 30, 2003 genta ボタンを押されたらちょっと画像をずらす
+			// アイテム矩形からの画像のオフセット	// 2007.03.25 ryoji
+			CMyRect rc( pnmh->rc );
+			int offset = ( rc.Height() - m_pcIcons->cy() ) / 2;
 
-			//	Sep. 6, 2003 genta 押下時は右だけでなく下にもずらす
-			m_pcIcons->Draw( nIconId, pnmh->hdc, pnmh->rc.left + offset + shift, pnmh->rc.top + offset + shift,
-				(pnmh->uItemState & CDIS_DISABLED ) ? ILD_MASK : ILD_NORMAL
+			const int cxEdge = DpiScaleX( 1 );
+			const int cyEdge = DpiScaleY( 1 );
+			const int cxSmIcon = DpiScaleX( 16 );
+			const int cySmIcon = DpiScaleY( 16 );
+
+			// ボタンを押されたらちょっと画像をずらす	// Aug. 30, 2003 genta
+			int shift = pnmh->uItemState & ( CDIS_SELECTED | CDIS_CHECKED ) ? cxEdge : 0;
+
+			// アイコン描画
+			m_pcIcons->DrawToolIcon(
+				pnmh->hdc,
+				rc.left + offset + shift,
+				rc.top + offset + shift, // 押下時は右だけでなく下にもずらす // Sep. 6, 2003 genta
+				nIconId,
+				( pnmh->uItemState & CDIS_DISABLED ) ? ILD_MASK : ILD_NORMAL,
+				cxSmIcon, cySmIcon
 			);
 		}
 		break;
@@ -470,7 +500,6 @@ LPARAM CMainToolBar::ToolBarOwnerDraw( LPNMCUSTOMDRAW pnmh )
 	}
 	return CDRF_DODEFAULT;
 }
-
 
 /*! ツールバー更新用タイマーの処理
 	@date 2002.01.03 YAZAKI m_tbMyButtonなどをCShareDataからCMenuDrawerへ移動したことによる修正。
@@ -578,7 +607,6 @@ int CMainToolBar::GetSearchKey(std::wstring& strText)
 	}
 	return strText.length();
 }
-
 
 /*!
 ツールバーの検索ボックスにフォーカスを移動する.

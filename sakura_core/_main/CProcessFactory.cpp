@@ -1,5 +1,4 @@
-﻿//	この行は文字化け対策用です．消さないでください
-/*!	@file
+﻿/*!	@file
 	@brief プロセス生成クラス
 
 	@author aroka
@@ -29,7 +28,6 @@
 #include <tchar.h>
 
 class CProcess;
-
 
 /*!
 	@brief プロセスクラスを生成する
@@ -82,7 +80,6 @@ CProcess* CProcessFactory::Create( HINSTANCE hInstance, LPCTSTR lpCmdLine )
 	}
 	return process;
 }
-
 
 bool CProcessFactory::ProfileSelect( HINSTANCE hInstance, LPCTSTR lpCmdLine )
 {
@@ -137,7 +134,6 @@ bool CProcessFactory::IsValidVersion()
 	// 動作可能バージョン(=windows7以降)でなければ起動できない。
 	return true;
 }
-
 
 /*!
 	@brief コマンドラインに -NOWIN があるかを判定する。
@@ -341,5 +337,4 @@ bool CProcessFactory::TestWriteQuit()
 	}
 	return false;
 }
-
 

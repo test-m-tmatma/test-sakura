@@ -1,6 +1,6 @@
 @echo off
 
-set OUT_DIR=%1
+set OUT_DIR=%~1
 if "%OUT_DIR%" == "" (
 	set OUT_DIR=.
 )
@@ -16,8 +16,8 @@ pushd "%~dp0"
 
 : Git enabled checking
 set GIT_ENABLED=1
-where git 1>nul 2>&1
-if errorlevel 1 (
+if not defined CMD_GIT call "%~dp0..\tools\find-tools.bat"
+if not defined CMD_GIT (
 	set GIT_ENABLED=0
 	@echo NOTE: No git command
 )
@@ -28,13 +28,13 @@ if not exist ..\.git (
 
 : Get git hash if git is enabled
 if "%GIT_ENABLED%" == "1" (
-	for /f "usebackq" %%s in (`git show -s --format^=%%h`) do (
+	for /f "usebackq" %%s in (`"%CMD_GIT%" show -s --format^=%%h`) do (
 		set GIT_SHORT_COMMIT_HASH=%%s
 	)
-	for /f "usebackq" %%s in (`git show -s --format^=%%H`) do (
+	for /f "usebackq" %%s in (`"%CMD_GIT%" show -s --format^=%%H`) do (
 		set GIT_COMMIT_HASH=%%s
 	)
-	for /f "usebackq" %%s in (`git config --get remote.origin.url`) do (
+	for /f "usebackq" %%s in (`"%CMD_GIT%" config --get remote.origin.url`) do (
 		set GIT_REMOTE_ORIGIN_URL=%%s
 	)
 ) else (
@@ -69,21 +69,6 @@ if not "%APPVEYOR_PULL_REQUEST_HEAD_COMMIT%" == "" (
 	set APPVEYOR_SHORTHASH_PR_HEAD=
 )
 
-@echo GIT_SHORT_COMMIT_HASH : %GIT_SHORT_COMMIT_HASH%
-@echo GIT_COMMIT_HASH       : %GIT_COMMIT_HASH%
-@echo GIT_REMOTE_ORIGIN_URL : %GIT_REMOTE_ORIGIN_URL%
-@echo APPVEYOR_URL          : %APPVEYOR_URL%
-@echo APPVEYOR_REPO_NAME    : %APPVEYOR_REPO_NAME%
-@echo APPVEYOR_REPO_TAG_NAME: %APPVEYOR_REPO_TAG_NAME%
-@echo APPVEYOR_ACCOUNT_NAME : %APPVEYOR_ACCOUNT_NAME%
-@echo APPVEYOR_PROJECT_SLUG : %APPVEYOR_PROJECT_SLUG%
-@echo APPVEYOR_BUILD_VERSION: %APPVEYOR_BUILD_VERSION%
-@echo APPVEYOR_BUILD_NUMBER : %APPVEYOR_BUILD_NUMBER%
-@echo GITHUB_COMMIT_URL           : %GITHUB_COMMIT_URL%
-@echo GITHUB_COMMIT_URL_PR_HEAD   : %GITHUB_COMMIT_URL_PR_HEAD%
-@echo APPVEYOR_SHORTHASH          : %APPVEYOR_SHORTHASH%
-@echo APPVEYOR_SHORTHASH_PR_HEAD  : %APPVEYOR_SHORTHASH_PR_HEAD%
-
 @rem -- build APPVEYOR_BUILD_URL variable start ----
 set APPVEYOR_BUILD_URL_VALID=1
 if "%APPVEYOR_URL%"           == ""  set APPVEYOR_BUILD_URL_VALID=0
@@ -93,7 +78,6 @@ if "%APPVEYOR_BUILD_VERSION%" == ""  set APPVEYOR_BUILD_URL_VALID=0
 if "%APPVEYOR_BUILD_URL_VALID%" == "1" (
 	set APPVEYOR_BUILD_URL=%APPVEYOR_URL%/project/%APPVEYOR_ACCOUNT_NAME%/%APPVEYOR_PROJECT_SLUG%/build/%APPVEYOR_BUILD_VERSION%
 )
-@echo APPVEYOR_BUILD_URL          : %APPVEYOR_BUILD_URL%
 @rem -- build APPVEYOR_BUILD_URL variable end   ----
 
 : Output githash.h
@@ -115,15 +99,31 @@ if "%VALID_CREATE_GITHASH%" == "0" (
 	exit /b 0
 )
 
-call :output_githash > %GITHASH_H_TMP%
+call :output_githash > "%GITHASH_H_TMP%"
 
-fc %GITHASH_H% %GITHASH_H_TMP% 1>nul 2>&1
+fc "%GITHASH_H%" "%GITHASH_H_TMP%" 1>nul 2>&1
 if not errorlevel 1 (
-	del %GITHASH_H_TMP%
+	del "%GITHASH_H_TMP%"
 	@echo %GITHASH_H% was not updated.
 ) else (
-	if exist %GITHASH_H% del %GITHASH_H%
-	move /y %GITHASH_H_TMP% %GITHASH_H%
+	@echo GIT_SHORT_COMMIT_HASH : %GIT_SHORT_COMMIT_HASH%
+	@echo GIT_COMMIT_HASH       : %GIT_COMMIT_HASH%
+	@echo GIT_REMOTE_ORIGIN_URL : %GIT_REMOTE_ORIGIN_URL%
+	@echo APPVEYOR_URL          : %APPVEYOR_URL%
+	@echo APPVEYOR_REPO_NAME    : %APPVEYOR_REPO_NAME%
+	@echo APPVEYOR_REPO_TAG_NAME: %APPVEYOR_REPO_TAG_NAME%
+	@echo APPVEYOR_ACCOUNT_NAME : %APPVEYOR_ACCOUNT_NAME%
+	@echo APPVEYOR_PROJECT_SLUG : %APPVEYOR_PROJECT_SLUG%
+	@echo APPVEYOR_BUILD_VERSION: %APPVEYOR_BUILD_VERSION%
+	@echo APPVEYOR_BUILD_NUMBER : %APPVEYOR_BUILD_NUMBER%
+	@echo GITHUB_COMMIT_URL           : %GITHUB_COMMIT_URL%
+	@echo GITHUB_COMMIT_URL_PR_HEAD   : %GITHUB_COMMIT_URL_PR_HEAD%
+	@echo APPVEYOR_SHORTHASH          : %APPVEYOR_SHORTHASH%
+	@echo APPVEYOR_SHORTHASH_PR_HEAD  : %APPVEYOR_SHORTHASH_PR_HEAD%
+	@echo APPVEYOR_BUILD_URL          : %APPVEYOR_BUILD_URL%
+
+	if exist "%GITHASH_H%" del "%GITHASH_H%"
+	move /y "%GITHASH_H_TMP%" "%GITHASH_H%"
 	@echo %GITHASH_H% was updated.
 )
 
@@ -159,6 +159,10 @@ if "%APPVEYOR_REPO_NAME%" == "" (
 ) else (
 	echo #define APPVEYOR_REPO_NAME "%APPVEYOR_REPO_NAME%"
 )
+
+@rem enable 'dev version' macro which will be disabled on release branches
+echo #define APPVEYOR_DEV_VERSION
+
 if "%APPVEYOR_REPO_TAG_NAME%" == "" (
 	echo // APPVEYOR_REPO_TAG_NAME is not defined
 ) else (

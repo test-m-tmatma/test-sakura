@@ -46,7 +46,6 @@ static const int MAX_TOOLBAR_ICON_COUNT		= MAX_TOOLBAR_ICON_X * MAX_TOOLBAR_ICON
 //2010/3/14 Uchi アイコンの最大登録数を32個増やした(384→416)
 //2010/6/26 syat アイコンの最大登録数を15段に増やした(416→480)
 
-
 // 旧版と違い、bool型使えるようにしてあります by kobake
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -237,6 +236,8 @@ struct CommonSetting_Edit
 	bool	m_bEnableExtEol;			//!< NEL,PS,LSを改行コードとして利用する
 	bool	m_bBoxSelectLock;			//!< (矩形選択)移動でロックする
 
+	bool	m_bVistaStyleFileDialog;	//!< Vistaスタイルのファイルダイアログ
+
 	// (ダイアログ項目無し)
 	BOOL	m_bAutoColumnPaste;			//!< 矩形コピーのテキストは常に矩形貼り付け
 };
@@ -361,7 +362,6 @@ public:
 	SFilePath	m_szBackUpPathAdvanced;		//!< バックアップを作成するフォルダの詳細設定 20051107 aroka
 };
 
-
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                           書式                              //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -439,10 +439,6 @@ struct CommonSetting_KeyBind
 	BYTE				m_VKeyToKeyNameArr[256+10];	//!< キーコード→割り当て表インデックス // 2012.11.25 aroka
 };
 
-
-
-
-
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                     カスタムメニュー                        //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -454,7 +450,6 @@ struct CommonSetting_CustomMenu
 	KEYCODE			m_nCustMenuItemKeyArr [MAX_CUSTOM_MENU][MAX_CUSTOM_MENU_ITEMS];
 	bool			m_bCustMenuPopupArr   [MAX_CUSTOM_MENU];
 };
-
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                        ツールバー                           //
@@ -714,7 +709,6 @@ struct CommonSetting_MainMenu
 	CMainMenu		m_cMainMenuTbl[MAX_MAINMENU];		//!< メインメニューデータ
 	bool 			m_bMainMenuKeyParentheses;			//!< アクセスキーを( )付で表示
 };
-
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                                                             //

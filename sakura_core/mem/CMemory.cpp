@@ -52,6 +52,7 @@ void CMemory::_init_members()
 CMemory::CMemory()
 {
 	_init_members();
+	SetRawData( NULL, 0 );
 }
 
 /*
@@ -72,14 +73,10 @@ CMemory::CMemory(const CMemory& rhs)
 	SetRawData(rhs);
 }
 
-
 CMemory::~CMemory()
 {
 	_Empty();
 }
-
-
-
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                          演算子                             //
@@ -93,15 +90,9 @@ const CMemory& CMemory::operator = ( const CMemory& rhs )
 	return *this;
 }
 
-
-
-
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                         実装補助                            //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-
-
-
 
 /*
 || バッファの最後にデータを追加する（protectメンバ
@@ -117,19 +108,6 @@ void CMemory::_AddData( const void* pData, int nDataLen )
 	m_pRawData[m_nRawLen+1] = '\0'; //終端'\0'を2つ付加する('\0''\0'==L'\0')。 2007.08.13 kobake 追加
 	return;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /* 等しい内容か */
 int CMemory::IsEqual(const CMemory& cmem1, const CMemory& cmem2)
@@ -148,22 +126,6 @@ int CMemory::IsEqual(const CMemory& cmem1, const CMemory& cmem2)
 	}
 	return FALSE;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /* !上位バイトと下位バイトを交換する
 
@@ -209,7 +171,6 @@ void CMemory::SwapHLByte( char* pData, const int nDataLen ){
 	}
 	return;
 }
-
 
 /* !上位バイトと下位バイトを交換する
 
@@ -266,8 +227,6 @@ void CMemory::SwapHLByte( void ){
 */
 }
 
-
-
 bool CMemory::SwabHLByte( const CMemory& mem )
 {
 	if( this == &mem ){
@@ -291,8 +250,6 @@ bool CMemory::SwabHLByte( const CMemory& mem )
 	_SetRawLength(nSize);
 	return true;
 }
-
-
 
 /*
 || バッファサイズの調整
@@ -326,7 +283,6 @@ void CMemory::AllocBuffer( int nNewDataLen )
 		}
 	}
 
-
 	if( NULL == pWork ){
 		::MYMESSAGEBOX(	NULL, MB_OKCANCEL | MB_ICONQUESTION | MB_TOPMOST, GSTR_APPNAME,
 			LS(STR_ERR_DLGMEM1), nNewDataLen
@@ -340,8 +296,6 @@ void CMemory::AllocBuffer( int nNewDataLen )
 	m_pRawData = pWork;
 	return;
 }
-
-
 
 /* バッファの内容を置き換える */
 void CMemory::SetRawData( const void* pData, int nDataLen )
@@ -390,7 +344,6 @@ void CMemory::SetRawDataHoldBuffer( const CMemory& pcmemData )
 	return;
 }
 
-
 /* バッファの最後にデータを追加する（publicメンバ）*/
 void CMemory::AppendRawData( const void* pData, int nDataLenBytes )
 {
@@ -421,15 +374,12 @@ void CMemory::_Empty( void )
 	return;
 }
 
-
-
 void CMemory::_AppendSz(const char* str)
 {
 	int len=strlen(str);
 	AllocBuffer( m_nRawLen + len );
 	_AddData(str,len);
 }
-
 
 void CMemory::_SetRawLength(int nLength)
 {

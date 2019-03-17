@@ -70,7 +70,6 @@ enum ERegisterPlugResult {
 	PPMGR_CONFLICT				//指定したジャックは別のプラグインが接続している
 };
 
-
 //ジャック管理クラス
 class CJackManager : public TSingleton<CJackManager>{
 	friend class TSingleton<CJackManager>;
@@ -83,6 +82,7 @@ public:
 	ERegisterPlugResult RegisterPlug( wstring pszJack, CPlug* plug );	//プラグをジャックに関連付ける
 	bool UnRegisterPlug( wstring pszJack, CPlug* plug );	//プラグの関連付けを解除する
 	bool GetUsablePlug( EJack jack, PlugId plugId, CPlug::Array* plugs );	//利用可能なプラグを検索する
+	void InvokePlugins( EJack jack, CEditView* view );		//プラグインを列挙して呼び出し
 private:
 	EJack GetJackFromName( wstring sName );	//ジャック名をジャック番号に変換する
 

@@ -53,7 +53,6 @@
 #include "util/string_ex2.h"
 #include "sakura_rc.h"
 
-
 //#if(WINVER >= 0x0500)
 #ifndef	SPI_GETFOREGROUNDLOCKTIMEOUT
 #define SPI_GETFOREGROUNDLOCKTIMEOUT        0x2000
@@ -106,7 +105,6 @@ static int compTABMENU_DATA( const void *arg1, const void *arg2 )
 		ret = ((TABMENU_DATA*)arg1)->iItem - ((TABMENU_DATA*)arg2)->iItem;
 	return ret;
 }
-
 
 WNDPROC	gm_pOldWndProc = NULL;
 
@@ -1268,7 +1266,7 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 
 		// 状態に従ってテキストと背景色を決める
 		COLORREF clrText;
-		INT_PTR nSysClrBk;
+		int nSysClrBk;
 		if (lpdis->itemState & ODS_SELECTED)
 		{
 			clrText = ::GetSysColor( COLOR_HIGHLIGHTTEXT );
@@ -1281,7 +1279,7 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 		}
 
 		// 背景描画
-		::FillRect( gr, &rcItem, (HBRUSH)(nSysClrBk + 1) );
+		::MyFillRect( gr, rcItem, nSysClrBk );
 
 		// アイコン描画
 		int cxIcon = CX_SMICON;
@@ -1343,7 +1341,7 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 
 		// 背景描画
 		if( !IsVisualStyle() ) {
-			::FillRect( gr, &rcItem, (HBRUSH)(COLOR_BTNFACE + 1) );
+			::MyFillRect( gr, rcItem, COLOR_BTNFACE );
 		}else{
 			CUxTheme& uxTheme = *CUxTheme::getInstance();
 			int iPartId = TABP_TABITEM;
@@ -1589,7 +1587,7 @@ LRESULT CTabWnd::OnPaint( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 
 	// 背景を描画する
 	::GetClientRect( hwnd, &rc );
-	::FillRect( gr, &rc, (HBRUSH)(COLOR_3DFACE + 1) );
+	::MyFillRect( gr, rc, COLOR_3DFACE );
 
 	// ボタンを描画する
 	DrawListBtn( gr, &rc );
@@ -1636,9 +1634,7 @@ LRESULT CTabWnd::OnPaint( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 
 			if( rcCurSel.left < rcCurSel.right )
 			{
-				HBRUSH hBr = ::CreateSolidBrush( RGB( 255, 128, 0 ) );
-				::FillRect( gr, &rcCurSel, hBr );
-				::DeleteObject( hBr );
+				::MyFillRect( gr, rcCurSel, RGB( 255, 128, 0 ) );
 			}
 		}
 	}
@@ -2068,7 +2064,6 @@ void CTabWnd::Refresh( BOOL bEnsureVisible/* = TRUE*/, BOOL bRebuild/* = FALSE*/
 
 	return;
 }
-
 
 /*!	編集ウィンドウの位置合わせ
 
@@ -2778,7 +2773,6 @@ void CTabWnd::GetTabCloseBtnRect( const LPRECT lprcTab, LPRECT lprc, bool select
 		(lprcTab->top + (selected ? -2: 0)) + DpiScaleY(2) );
 }
 
-
 /** タブ名取得処理
 
 	@param[in] EditNode 編集ウィンドウ情報
@@ -2833,8 +2827,6 @@ void CTabWnd::GetTabName( EditNode* pEditNode, BOOL bFull, BOOL bDupamp, LPTSTR 
 
 	delete []pszText;
 }
-
-
 
 /**	タブ一覧表示処理
 
@@ -3004,7 +2996,6 @@ LRESULT CTabWnd::TabListMenu( POINT pt, BOOL bSel/* = TRUE*/, BOOL bFull/* = FAL
 
 	return 0L;
 }
-
 
 /** 次のグループの先頭ウィンドウを探す
 	@date 2007.06.20 ryoji 新規作成
@@ -3253,7 +3244,6 @@ void CTabWnd::JoinPrev( void )
 		SeparateGroup( GetParentHwnd(), hWnd, ptSrc, ptDst );
 	}
 }
-
 
 /*! サイズボックスの表示／非表示切り替え */
 void CTabWnd::SizeBox_ONOFF( bool bSizeBox )

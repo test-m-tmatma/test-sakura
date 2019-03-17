@@ -66,12 +66,8 @@ protected:
 
 private:
 	void SelectFolder( HWND hwndDlg );
-
 };
-
-
 
 ///////////////////////////////////////////////////////////////////////
 #endif /* _CDLGTAGSMAKE_H_ */
-
 

@@ -84,7 +84,6 @@ CShareData::~CShareData()
 	}
 }
 
-
 static CMutex g_cMutexShareWork( FALSE, GSTR_MUTEX_SAKURA_SHAREWORK );
  
 CMutex& CShareData::GetMutexShareWork(){
@@ -345,6 +344,7 @@ bool CShareData::InitShareData()
 			sEdit.m_bConvertEOLPaste = false;			/* 改行コードを変換して貼り付ける */	// 2009.02.28 salarm
 			sEdit.m_bEnableExtEol = false;
 			sEdit.m_bBoxSelectLock = true;
+			sEdit.m_bVistaStyleFileDialog = false;
 
 			sEdit.m_bNotOverWriteCRLF = TRUE;			/* 改行は上書きしない */
 			sEdit.m_bOverWriteFixMode = false;			// 文字幅に合わせてスペースを詰める
@@ -742,13 +742,9 @@ bool CShareData::InitShareData()
 			return false;
 		}
 		//	To Here Oct. 27, 2000 genta
-
 	}
 	return true;
 }
-
-
-
 
 static void ConvertLangString( wchar_t* pBuf, size_t chBufSize, std::wstring& org, std::wstring& to )
 {
@@ -794,11 +790,8 @@ static void ConvertLangValueImpl( char* pBuf, size_t chBufSize, int nStrId, std:
 	index++;
 }
 
-
 #define ConvertLangValue(buf, id)  ConvertLangValueImpl(buf, _countof(buf), id, values, index, bSetValues, true);
 #define ConvertLangValue2(buf, id) ConvertLangValueImpl(buf, _countof(buf), id, values, index, bSetValues, false);
-
-
 
 /*!
 	国際化対応のための文字列を変更する
@@ -988,20 +981,7 @@ BOOL CShareData::ActiveAlreadyOpenedWindow( const TCHAR* pszPath, HWND* phwndOwn
 	else {
 		return FALSE;
 	}
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 /*!
 	アウトプットウインドウに出力(書式付)
@@ -1133,8 +1113,6 @@ BOOL CShareData::IsPrivateSettings( void ){
 	return m_pShareData->m_sFileNameManagement.m_IniFolder.m_bWritePrivate;
 }
 
-
-
 /*
 	CShareData::CheckMRUandOPENFOLDERList
 	MRUとOPENFOLDERリストの存在チェックなど
@@ -1221,7 +1199,6 @@ int CShareData::GetMacroFilename( int idx, TCHAR *pszPath, int nBufLen )
 		_tcscpy( ptr, pszFile );
 		return nAllLen;
 	}
-
 }
 
 /*!	idxで指定したマクロのm_bReloadWhenExecuteを取得する。
@@ -1235,9 +1212,6 @@ bool CShareData::BeReloadWhenExecuteMacro( int idx )
 
 	return m_pShareData->m_Common.m_sMacro.m_MacroTable[idx].m_bReloadWhenExecute;
 }
-
-
-
 
 /*!	@brief 共有メモリ初期化/ツールバー
 
@@ -1274,6 +1248,8 @@ void CShareData::InitToolButtons(DLLSHAREDATA* pShareData)
 		228,	//置換		// Oct. 7, 2000 JEPRO 追加
 		229,	//検索マークのクリア	//Sept. 16, 2000 JEPRO 41→25に変更(Oct. 7, 2000 25→26)	//Oct. 25, 2000 25→229
 		230,	//Grep		//Sept. 16, 2000 JEPRO 14→31に変更	//Oct. 25, 2000 31→230
+		0,
+
 		232,	//アウトライン解析	//Dec. 24, 2000 JEPRO 追加
 		0,
 
@@ -1298,9 +1274,7 @@ void CShareData::InitToolButtons(DLLSHAREDATA* pShareData)
 	/* ツールバーボタンの数 */
 	pShareData->m_Common.m_sToolBar.m_nToolBarButtonNum = _countof(DEFAULT_TOOL_BUTTONS);
 	pShareData->m_Common.m_sToolBar.m_bToolBarIsFlat = !IsVisualStyle();			/* フラットツールバーにする／しない */	// 2006.06.23 ryoji ビジュアルスタイルでは初期値をノーマルにする
-	
 }
-
 
 /*!	@brief 共有メモリ初期化/ポップアップメニュー
 
@@ -1377,8 +1351,17 @@ void CShareData::InitPopupMenu(DLLSHAREDATA* pShareData)
 	rMenu.m_nCustMenuItemFuncArr[0][n] = F_0;
 	rMenu.m_nCustMenuItemKeyArr [0][n] = '\0';
 	n++;
+	rMenu.m_nCustMenuItemFuncArr[0][n] = F_COPYFNAME;
+	rMenu.m_nCustMenuItemKeyArr [0][n] = 'F';
+	n++;
 	rMenu.m_nCustMenuItemFuncArr[0][n] = F_COPYPATH;
 	rMenu.m_nCustMenuItemKeyArr [0][n] = '\\';
+	n++;
+	rMenu.m_nCustMenuItemFuncArr[0][n] = F_COPYDIRPATH;
+	rMenu.m_nCustMenuItemKeyArr [0][n] = 'O';
+	n++;
+	rMenu.m_nCustMenuItemFuncArr[0][n] = F_0;
+	rMenu.m_nCustMenuItemKeyArr [0][n] = '\0';
 	n++;
 	rMenu.m_nCustMenuItemFuncArr[0][n] = F_OPEN_FOLDER_IN_EXPLORER;
 	rMenu.m_nCustMenuItemKeyArr[0][n] = 'E';
@@ -1440,7 +1423,16 @@ void CShareData::InitPopupMenu(DLLSHAREDATA* pShareData)
 	rMenu.m_nCustMenuItemFuncArr[CUSTMENU_INDEX_FOR_TABWND][n] = F_0;
 	rMenu.m_nCustMenuItemKeyArr [CUSTMENU_INDEX_FOR_TABWND][n] = '\0';
 	n++;
+	rMenu.m_nCustMenuItemFuncArr[CUSTMENU_INDEX_FOR_TABWND][n] = F_COPYFNAME;
+	rMenu.m_nCustMenuItemKeyArr [CUSTMENU_INDEX_FOR_TABWND][n] = 'F';
+	n++;
 	rMenu.m_nCustMenuItemFuncArr[CUSTMENU_INDEX_FOR_TABWND][n] = F_COPYPATH;
+	rMenu.m_nCustMenuItemKeyArr [CUSTMENU_INDEX_FOR_TABWND][n] = '\0';
+	n++;
+	rMenu.m_nCustMenuItemFuncArr[CUSTMENU_INDEX_FOR_TABWND][n] = F_COPYDIRPATH;
+	rMenu.m_nCustMenuItemKeyArr [CUSTMENU_INDEX_FOR_TABWND][n] = '\0';
+	n++;
+	rMenu.m_nCustMenuItemFuncArr[CUSTMENU_INDEX_FOR_TABWND][n] = F_0;
 	rMenu.m_nCustMenuItemKeyArr [CUSTMENU_INDEX_FOR_TABWND][n] = '\0';
 	n++;
 	rMenu.m_nCustMenuItemFuncArr[CUSTMENU_INDEX_FOR_TABWND][n] = F_OPEN_FOLDER_IN_EXPLORER; 
@@ -1497,7 +1489,6 @@ void CShareData::InitPopupMenu(DLLSHAREDATA* pShareData)
 /* 言語選択後に共有メモリ内の文字列を更新する */
 void CShareData::RefreshString()
 {
-
 	RefreshKeyAssignString( m_pShareData );
 }
 
@@ -1512,7 +1503,6 @@ std::vector<STypeConfig*>& CShareData::GetTypeSettings()
 {
 	return *m_pvTypeSettings;
 }
-
 
 void CShareData::InitFileTree( SFileTree* setting )
 {

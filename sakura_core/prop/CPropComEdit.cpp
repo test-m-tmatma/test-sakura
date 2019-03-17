@@ -165,11 +165,9 @@ INT_PTR CPropEdit::DispatchEvent(
 		MyWinHelp( hwndDlg, HELP_CONTEXTMENU, (ULONG_PTR)(LPVOID)p_helpids );	// 2006.10.10 ryoji MyWinHelpに変更に変更
 		return TRUE;
 //@@@ 2001.12.22 End
-
 	}
 	return FALSE;
 }
-
 
 /* ダイアログデータの設定 */
 void CPropEdit::SetData( HWND hwndDlg )
@@ -229,11 +227,11 @@ void CPropEdit::SetData( HWND hwndDlg )
 	CheckDlgButtonBool( hwndDlg, IDC_CHECK_ENABLEEXTEOL, m_Common.m_sEdit.m_bEnableExtEol );
 	// 矩形選択移動で選択をロックする
 	CheckDlgButtonBool( hwndDlg, IDC_CHECK_BOXSELECTLOCK, m_Common.m_sEdit.m_bBoxSelectLock );
+	// Vistaスタイルファイルダイアログ
+	CheckDlgButtonBool( hwndDlg, IDC_CHECK_VISTA_STYLE_FILEDIALOG, m_Common.m_sEdit.m_bVistaStyleFileDialog );
 
 	EnableEditPropInput( hwndDlg );
 }
-
-
 
 /* ダイアログデータの取得 */
 int CPropEdit::GetData( HWND hwndDlg )
@@ -285,6 +283,8 @@ int CPropEdit::GetData( HWND hwndDlg )
 	m_Common.m_sEdit.m_bEnableExtEol = IsDlgButtonCheckedBool( hwndDlg, IDC_CHECK_ENABLEEXTEOL );
 	// 矩形選択移動で選択をロックする
 	m_Common.m_sEdit.m_bBoxSelectLock = IsDlgButtonCheckedBool( hwndDlg, IDC_CHECK_BOXSELECTLOCK );
+	// Vistaスタイルファイルダイアログ
+	m_Common.m_sEdit.m_bVistaStyleFileDialog = IsDlgButtonCheckedBool( hwndDlg, IDC_CHECK_VISTA_STYLE_FILEDIALOG );
 
 	return TRUE;
 }
@@ -307,5 +307,4 @@ void CPropEdit::EnableEditPropInput( HWND hwndDlg )
 		::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_FILEOPENDIR ), FALSE );
 	}
 }
-
 

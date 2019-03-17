@@ -1,5 +1,4 @@
 ﻿/*! @file */
-//	この行は文字化け対策用です．消さないでください
 
 #include "StdAfx.h"
 #include "CUnicode.h"
@@ -46,7 +45,6 @@ EConvertResult CUnicode::_UnicodeToUnicode_in( const CMemory& cSrc, CNativeW* pD
 	return res;
 }
 
-
 EConvertResult CUnicode::_UnicodeToUnicode_out( const CNativeW& cSrc, CMemory* pDstMem, const bool bBigEndian )
 {
 	if( bBigEndian == true ){
@@ -66,15 +64,11 @@ EConvertResult CUnicode::_UnicodeToUnicode_out( const CNativeW& cSrc, CMemory* p
 	return RESULT_COMPLETE;   // 何もしない
 }
 
-
-
-
 void CUnicode::GetBom(CMemory* pcmemBom)
 {
 	static const BYTE UTF16LE_BOM[]={0xFF,0xFE};
 	pcmemBom->SetRawData(UTF16LE_BOM, sizeof(UTF16LE_BOM));
 }
-
 
 void CUnicode::GetEol(CMemory* pcmemEol, EEolType eEolType)
 {

@@ -83,12 +83,8 @@ public:
 	bool		m_bBomDst;			// 相手ファイルのBOM
 	int			m_nDiffFlgOpt;		// DIFFオプション
 	HWND		m_hWnd_Dst;			// 相手ウインドウハンドル
-
 };
-
-
 
 ///////////////////////////////////////////////////////////////////////
 #endif /* _CDLGDIFF_H_ */
-
 
