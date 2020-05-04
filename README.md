@@ -53,6 +53,8 @@
 
 <!-- /TOC -->
 
+[![Maintainability](https://api.codeclimate.com/v1/badges/f05f634ef9de6b371e9b/maintainability)](https://codeclimate.com/github/test-m-tmatma/test-sakura/maintainability)
+
 A free Japanese text editor for Windows
 
 ## Hot topic
